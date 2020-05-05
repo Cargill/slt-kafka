@@ -1,0 +1,99 @@
+*&---------------------------------------------------------------------*
+*& Report ZKAFKA_TBL_LTRS
+*&---------------------------------------------------------------------*
+REPORT ZKAFKA_TBL_LTRS.
+
+TABLES: iuuc_repl_tab_dv.
+PARAMETERS p_mt TYPE dmc_mt_header-id OBLIGATORY.
+*PARAMETERS p_tbl TYPE TABNAME OBLIGATORY.
+SELECT-OPTIONS: s_tbl FOR iuuc_repl_tab_dv-tabname no intervals .
+TABLES: zkafka_tbl_topic.
+
+DATA: ls_zkakfa_tbl_topic   TYPE zkafka_tbl_topic.
+DATA: lwa_select            LIKE LINE OF s_tbl.
+
+DATA: ls_iuuc_repl_tab_dv TYPE   iuuc_repl_tab_dv.
+DATA: ls_iuuc_repl_tabstg TYPE   iuuc_repl_tabstg.
+DATA: ls_iuuc_at_restart  TYPE   iuuc_at_restart.
+DATA: ls_dmc_db_tab_map   TYPE   dmc_db_tab_map.
+DATA: ls_iuuc_ass_rul_map TYPE   iuuc_ass_rul_map.
+DATA: lv_tabname          TYPE   tabname.
+DATA lv_topic_prefix      TYPE   string.
+
+LOOP AT s_tbl into lwa_select.
+
+  ls_iuuc_repl_tab_dv-mt_id = p_mt.
+  ls_iuuc_repl_tab_dv-tabname = lwa_select-low.
+  ls_iuuc_repl_tab_dv-deviation_type = 'A'.
+  ls_iuuc_repl_tab_dv-fieldname = 'UPDATE_TS'.
+  ls_iuuc_repl_tab_dv-pos = 998.
+  ls_iuuc_repl_tab_dv-exlength = 15.
+  ls_iuuc_repl_tab_dv-dtyp = 'DEC'.
+
+  INSERT INTO IUUC_REPL_TAB_DV VALUES ls_iuuc_repl_tab_dv.
+
+  ls_iuuc_repl_tab_dv-fieldname = 'CHANGE_FLAG'.
+  ls_iuuc_repl_tab_dv-pos = 999.
+  ls_iuuc_repl_tab_dv-exlength = 1.
+  ls_iuuc_repl_tab_dv-dtyp = 'CHAR'.
+
+  INSERT INTO IUUC_REPL_TAB_DV VALUES ls_iuuc_repl_tab_dv.
+
+  ls_iuuc_repl_tabstg-mt_id = p_mt.
+  ls_iuuc_repl_tabstg-tabname = lwa_select-low.
+  ls_iuuc_repl_tabstg-no_drop = 'D'.
+  ls_iuuc_repl_tabstg-rd_portion_size = 0.
+  ls_iuuc_repl_tabstg-table_deviation = 'X'.
+  ls_iuuc_repl_tabstg-index_creation = 4.
+  lv_tabname = lwa_select-low.
+  IF lv_tabname(1) = '/'.  "  Remove / from tablename
+    SHIFT lv_tabname BY 1 PLACES.
+  ENDIF.
+  REPLACE ALL OCCURENCES OF '/' IN lv_tabname WITH '_'.
+  ls_iuuc_repl_tabstg-target_name = lv_tabname.
+
+  INSERT INTO iuuc_repl_tabstg VALUES ls_iuuc_repl_tabstg.
+
+  ls_iuuc_at_restart-mt_id = p_mt.
+  ls_iuuc_at_restart-tabname = lwa_select-low.
+
+  INSERT INTO iuuc_at_restart VALUES ls_iuuc_at_restart.
+
+  ls_dmc_db_tab_map-mt_id = p_mt.
+  ls_dmc_db_tab_map-internal_tabname = lwa_select-low.
+  ls_dmc_db_tab_map-src_db_tabname = lwa_select-low.
+
+  INSERT INTO dmc_db_tab_map VALUES ls_dmc_db_tab_map.
+
+  ls_iuuc_ass_rul_map-mt_id = p_mt.
+  ls_iuuc_ass_rul_map-tabname = lwa_select-low.
+  ls_iuuc_ass_rul_map-basisversion = '740'.
+  ls_iuuc_ass_rul_map-event = 'BOL'.
+  ls_iuuc_ass_rul_map-include = 'ZINCLUDE_SEND_TO_KAFKA'.
+  ls_iuuc_ass_rul_map-code = ''.
+  ls_iuuc_ass_rul_map-status = '02'.
+
+  INSERT INTO iuuc_ass_rul_map VALUES ls_iuuc_ass_rul_map.
+
+  ls_iuuc_ass_rul_map-event = 'BOR'.
+  ls_iuuc_ass_rul_map-include = ''.
+  ls_iuuc_ass_rul_map-code = 'skip_record.'.
+  ls_iuuc_ass_rul_map-status = '02'.
+
+  INSERT INTO iuuc_ass_rul_map VALUES ls_iuuc_ass_rul_map.
+
+" Change to the default logic on 6/10/19.  We are now going to default to a single topic
+" and then you can still override it if you want to use a table specific topic
+  SELECT topic_prefix INTO lv_topic_prefix FROM zkafka_mt_tpcpre WHERE mt_id = p_mt.
+  ENDSELECT.
+
+  ls_zkakfa_tbl_topic-mt_id = p_mt.
+  ls_zkakfa_tbl_topic-tablename = lv_tabname.
+  ls_zkakfa_tbl_topic-topicname = lv_topic_prefix.
+
+  INSERT INTO ZKAFKA_TBL_TOPIC VALUES ls_zkakfa_tbl_topic.
+
+
+  WRITE: / 'LTRS Settings created for: ', lwa_select-low.
+
+  ENDLOOP.
