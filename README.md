@@ -32,7 +32,6 @@ ZKAFKA_PRINT_ERROR_RECORD
 ZKAFKA_TBL_LTRS
 ZKAFKA_TBL_TOPIC
 ZTRUNCATE_KAFKA_ERROR
-ZTRUNCATE_KAFKA_LOGGING
 ZTRUNCATE_KAFKA_TBL_LOG
 
 ## Once per SLT Configuration Setup
@@ -62,17 +61,28 @@ This is the main ABAP code that executes on every SLT batch/loop. At a high leve
 
 ### ZKAFKA_TBL_LTRS
 
-
+This program adds records to all of the standard SLT and custom Kafka tables necessary to replicate tables to Kafka. It provides a convenient way to perform this task, although it is possible to do it manually using the T-code LTRS and ZKAFKA_TBL_TOPIC. The main things this does is that it populates the ZKAFKA_TBL_TOPIC table with the default topic for that configuration. It also adds 2 columns to the table (UPDATE_TS and CHANGE_FLAG).  And it also adds the rule to call the ZINCLUDE_SEND_TO_KAFKA.
 
 ### ZKAFKA_TBL_TOPIC
+
+This program allows you to manually update or insert the association between a configuration/table and the kafka topic you wish it to write to. You can also use this program to activate a more detailed level of logging for a particular table.
 
 ### ZKAFKA_ERROR_RECORDS
 
 Should the include program encounter errors when calling the REST API, it will save the batch of records to the table ZKAFKA_ERROR.  This program can be used to re-process the records once you have resolved the issue.  Please note that the standard include program also checks for any error records and attempts to process them before the new batch of records. Thus maintaining the correct order of transactions.
 
 ### ZKAFKA_MT_TPCPRE
+
+When you set up a new configuration, you need to execute this program once to set up the default topic for that configuration.
+
 ### ZKAFKA_PRINT_ERROR_RECORD
 
+Because one of the columns in the ZKAFKA_ERROR table is of type STRING, you can not use SE16 to read the full record. You can use this program to print out the first X records in this table OR to print out a specific record if you provide the primary key. The main purpose of this is to help identify issues with the JSON formatting. The Kafka REST API may return a 500 error, but it won't provide you with any details about why it returned that. If you look at the recent records, you may be able to determine a bad numeric value or a non-unicode character.
+
 ### ZTRUNCATE_KAFKA_ERROR
-### ZTRUNCATE_KAFKA_LOGGING
+
+This program can be used to truncate the ZKAFKA_ERROR table
+
 ### ZTRUNCATE_KAFKA_TBL_LOG
+
+This program can be used to truncate the ZTRUNCATE_KAFKA_TBL_LOG table
