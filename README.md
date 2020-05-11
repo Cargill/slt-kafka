@@ -14,9 +14,12 @@ The tables and ABAP code in this repository can be used to allow SLT to take the
 In order to use this process there are a few steps that need to be done one time (per environment in your landscape)
 
 * Add a record to the TVARVC table. 
-NAME = ZBI_KAFKA_SERVER
-TYPE = P
-LOW =  <The URL of the kafka rest proxy>  ex.  HTTP://MY.KAFKAPROXY.COM:8082/TOPICS
+
+```
+    NAME = ZBI_KAFKA_SERVER
+    TYPE = P
+    LOW =  <The URL of the kafka rest proxy>  ex.  HTTP://MY.KAFKAPROXY.COM:8082/TOPICS
+```
 
 Documentation about the Kafka REST proxy can be found here.
 https://docs.confluent.io/1.0/kafka-rest/docs/intro.html 
@@ -26,13 +29,14 @@ https://docs.confluent.io/1.0/kafka-rest/docs/intro.html
 * Create all of the ABAP tables based on the definitions in associated .jpg files
 
 * Create all the INCLUDE program ZINCLUDE_SEND_TO_KAFKA  and all of the other ABAP programs in this repo.
-ZKAFKA_ERROR_RECORDS
-ZKAFKA_MT_TPCPRE
-ZKAFKA_PRINT_ERROR_RECORD
-ZKAFKA_TBL_LTRS
-ZKAFKA_TBL_TOPIC
-ZTRUNCATE_KAFKA_ERROR
-ZTRUNCATE_KAFKA_TBL_LOG
+
+    * ZKAFKA_ERROR_RECORDS
+    * ZKAFKA_MT_TPCPRE
+    * ZKAFKA_PRINT_ERROR_RECORD
+    * ZKAFKA_TBL_LTRS
+    * ZKAFKA_TBL_TOPIC
+    * ZTRUNCATE_KAFKA_ERROR
+    * ZTRUNCATE_KAFKA_TBL_LOG
 
 ## Once per SLT Configuration Setup
 
