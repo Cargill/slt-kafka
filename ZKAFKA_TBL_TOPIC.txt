@@ -1,0 +1,47 @@
+* Copyright 2018-2020 Cargill Incorporated
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+* 
+*     http://www.apache.org/licenses/LICENSE-2.0
+* 
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+
+*&---------------------------------------------------------------------*
+*& Report ZKAFKA_TBL_TOPIC
+*&---------------------------------------------------------------------*
+REPORT ZKAFKA_TBL_TOPIC.
+
+TABLES: zkafka_tbl_topic.
+PARAMETERS p_mt TYPE dmc_mt_header-id OBLIGATORY.
+PARAMETERS p_tbl TYPE TABNAME OBLIGATORY.
+PARAMETERS p_topic TYPE CHAR100.
+PARAMETERS p_log TYPE CHAR1.
+PARAMETERS : r_ins RADIOBUTTON GROUP act.
+PARAMETERS : r_upd RADIOBUTTON GROUP act.
+PARAMETERS : r_del RADIOBUTTON GROUP act.
+
+DATA: ls_zkakfa_tbl_topic   TYPE zkafka_tbl_topic.
+
+IF r_ins = 'X'.
+  ls_zkakfa_tbl_topic-mt_id = p_mt.
+  ls_zkakfa_tbl_topic-tablename = p_tbl.
+  ls_zkakfa_tbl_topic-topicname = p_topic.
+  ls_zkakfa_tbl_topic-logging_flag = p_log.
+
+  INSERT INTO ZKAFKA_TBL_TOPIC VALUES ls_zkakfa_tbl_topic.
+
+ENDIF.
+
+IF r_upd = 'X'.
+  UPDATE ZKAFKA_TBL_TOPIC SET topicname = p_topic  WHERE mt_id = p_mt AND tablename = p_tbl.
+  UPDATE ZKAFKA_TBL_TOPIC SET logging_flag = p_log  WHERE mt_id = p_mt AND tablename = p_tbl.
+ENDIF.
+
+IF r_del = 'X'.
+  DELETE FROM ZKAFKA_TBL_TOPIC WHERE mt_id = p_mt AND tablename = p_tbl.
+ENDIF.

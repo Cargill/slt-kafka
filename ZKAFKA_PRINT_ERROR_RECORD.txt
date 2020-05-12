@@ -1,0 +1,57 @@
+* Copyright 2018-2020 Cargill Incorporated
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+* 
+*     http://www.apache.org/licenses/LICENSE-2.0
+* 
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+
+*&---------------------------------------------------------------------*
+*& Report ZKAFKA_PRINT_ERROR_RECORD
+*&---------------------------------------------------------------------*
+REPORT zkafka_print_error_record.
+
+PARAMETERS p_id TYPE sysuuid_x16.
+PARAMETERS p_num TYPE i DEFAULT 1.
+
+DATA lv_json_message    TYPE string.
+DATA lv_message_length  TYPE i.
+DATA lv_offset          TYPE i.
+DATA lv_end_offset      TYPE i.
+DATA lv_subsequent_length TYPE i.
+DATA lwa_error          TYPE zkafka_error.
+DATA lt_error           TYPE STANDARD TABLE OF zkafka_error.
+
+
+IF p_id = '' OR p_id = '00000000000000000000000000000000'.
+  SELECT * FROM zkafka_error INTO TABLE lt_error UP TO p_num ROWS.
+ELSE.
+  SELECT * INTO TABLE lt_error FROM zkafka_error WHERE entryid = p_id .
+ENDIF.
+
+LOOP AT lt_error INTO lwa_error.
+  lv_offset = 0.
+  lv_json_message = lwa_error-entrydata.
+  lv_message_length = strlen( lv_json_message ).
+  WRITE: / 'Table: ', lwa_error-tablename, ' Topic: ', lwa_error-topicname.
+
+  WHILE lv_offset <= lv_message_length.
+
+    lv_subsequent_length = lv_message_length - lv_offset.
+    IF lv_subsequent_length < 150.
+      lv_end_offset = lv_subsequent_length.
+    ELSE.
+      lv_end_offset = 150.
+    ENDIF.
+
+    WRITE:  lv_json_message+lv_offset(lv_end_offset).
+    lv_offset = lv_offset + 150.
+
+  ENDWHILE.
+
+ENDLOOP.
