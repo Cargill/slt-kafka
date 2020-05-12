@@ -1,13 +1,17 @@
 # slt-kafka
 Framework for bridging SAP SLT events to Kafka
 
-## Code of Conduct
-
-slt-kafka operates under the [Cargill Code of Conduct](https://github.com/Cargill/code-of-conduct/blob/master/code-of-conduct.md).
-
 ## Overview
 
 The tables and ABAP code in this repository can be used to allow SLT to take the batch of records from the standard process, convert it to JSON, and send that payload to a Kafka topic. The code includes some error handling to maintain the correct order of transactional events.
+
+## Pre-Requirements
+
+Your Kafka environment must have the REST API enabled.
+
+## Limitations
+
+The current code does not support secure Kafka topics.
 
 ## One time Setup
 
@@ -90,3 +94,8 @@ This program can be used to truncate the ZKAFKA_ERROR table
 ### ZTRUNCATE_KAFKA_TBL_LOG
 
 This program can be used to truncate the ZTRUNCATE_KAFKA_TBL_LOG table
+
+
+## Code of Conduct
+
+slt-kafka operates under the [Cargill Code of Conduct](https://github.com/Cargill/code-of-conduct/blob/master/code-of-conduct.md).
